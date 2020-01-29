@@ -1,0 +1,20 @@
+sudo: required
+language: generic
+services:
+  - docker
+before_install:
+  - docker build -t solar7455/react-test -f ./client/Dockerfile.dev
+
+script:
+  - docker run -e CI=true solar7455/react-test npm test
+
+after_success:
+  - docker build -t solar7455/multi-client ./client
+  - docker build -t solar7455/multi-nginx ./nginx
+  - docker build -t solar7455/multi-server ./server
+  - docker build -t solar7455/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push solar7455/multi-client
+  - docker push solar7455/multi-nginx
+  - docker push solar7455/multi-server
+  - docker push solar7455/multi-worker
